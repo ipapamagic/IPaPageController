@@ -1,0 +1,11 @@
+use_frameworks!
+
+target 'IPaPageController_Example' do
+  pod 'IPaPageController', :path => '../'
+
+  target 'IPaPageController_Tests' do
+    inherit! :search_paths
+
+    
+  end
+end
