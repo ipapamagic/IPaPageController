@@ -1,0 +1,16 @@
+PODS:
+  - IPaPageController (0.1.0)
+
+DEPENDENCIES:
+  - IPaPageController (from `../`)
+
+EXTERNAL SOURCES:
+  IPaPageController:
+    :path: "../"
+
+SPEC CHECKSUMS:
+  IPaPageController: ce6095d7039787c5fc16b468a78bf61c945943b2
+
+PODFILE CHECKSUM: aa3ff2588c497efe84bbe94985b6f133d57340ff
+
+COCOAPODS: 1.5.3
