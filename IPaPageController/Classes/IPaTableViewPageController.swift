@@ -41,11 +41,11 @@ public class IPaTableViewPageController: IPaPageController {
             tableView.beginUpdates()
             if self.currentPage == self.totalPageNum {
                 if self.currentPage == 0 && self.hasNoDataCell {
-                    tableView.deleteRows(at: [IndexPath(row: 0, section: 0)], with: .automatic)
+                    tableView.deleteRows(at: [IndexPath(row: 0, section: 0)], with: .none)
                     self.hasNoDataCell = false
                 }
                 else if self.hasLoadingCell {
-                    tableView.deleteRows(at: [IndexPath(row: startRow, section: 0)], with: .automatic)
+                    tableView.deleteRows(at: [IndexPath(row: startRow, section: 0)], with: .none)
                 }
             }
             else if !self.hasLoadingCell {
@@ -59,7 +59,7 @@ public class IPaTableViewPageController: IPaPageController {
             }
             if self.currentPage != self.totalPageNum {
                 tableView.endUpdates() //need to call before reloadRows
-                tableView.reloadRows(at: [IndexPath(row: self.datas.count, section: 0)], with: .automatic)
+                
             }
             else {
                 if self.enableNoDataCell && self.datas.count == 0 && self.currentPage == 1 && self.totalPageNum == 1 {
