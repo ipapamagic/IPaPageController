@@ -18,10 +18,13 @@ public class IPaPageController: NSObject {
             return datas.count
         }
     }
-    @objc open func updateData(index:Int, data:[String:Any]) {
+    @objc open func updateData(at index:Int, data:[String:Any]) {
         self.datas[index] = data
     }
-    @objc open func getData(index:Int) -> Any? {
+    @objc open func removeData(at index:Int) {
+        self.datas.remove(at: index)
+    }
+    @objc open func getData(at index:Int) -> Any? {
         return (datas.count <= index) ? nil : datas[index]
     }
     @objc open func reloadAllData() {
