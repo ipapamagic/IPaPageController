@@ -7,15 +7,17 @@
 
 import UIKit
 @objc public protocol IPaTableViewPageControllerDelegate {
-    func tableView(forPageController:IPaTableViewPageController) -> UITableView
-    func createLoadingCell(forPageController:IPaTableViewPageController, indexPath:IndexPath) -> UITableViewCell
-    func createDataCell(forPageController:IPaTableViewPageController, indexPath:IndexPath) -> UITableViewCell
+    func tableView(for pageController:IPaTableViewPageController) -> UITableView
+    func createLoadingCell(for pageController:IPaTableViewPageController, indexPath:IndexPath) -> UITableViewCell
+    func createDataCell(for pageController:IPaTableViewPageController, indexPath:IndexPath) -> UITableViewCell
     
-    @objc optional func createNoDataCell(forPageController:IPaTableViewPageController) -> UITableViewCell
+    @objc optional func createNoDataCell(for pageController:IPaTableViewPageController) -> UITableViewCell
     
-    func loadData(forPageController:IPaTableViewPageController,  page:Int, complete:@escaping ([Any],Int,Int)->())
-    func configureCell(forPageController:IPaTableViewPageController,cell:UITableViewCell,indexPath:IndexPath,data:Any)
-    func configureLoadingCell(forPageController:IPaTableViewPageController,cell:UITableViewCell,indexPath:IndexPath)
+    func loadData(for pageController:IPaTableViewPageController,  page:Int, complete:@escaping ([Any],Int,Int)->())
+    func configureCell(for pageController:IPaTableViewPageController,cell:UITableViewCell,indexPath:IndexPath,data:Any)
+    func configureLoadingCell(for pageController:IPaTableViewPageController,cell:UITableViewCell,indexPath:IndexPath)
+    
+    @objc optional func isLoadingCell(for pageController:IPaTableViewPageController, indexPath:IndexPath) -> Bool
 }
 
 public class IPaTableViewPageController: IPaPageController {
@@ -27,15 +29,15 @@ public class IPaTableViewPageController: IPaPageController {
     @objc open var delegate:IPaTableViewPageControllerDelegate!
     @objc open override func reloadAllData() {
         super.reloadAllData()
-        let tableView = delegate.tableView(forPageController: self)
+        let tableView = delegate.tableView(for:self)
         tableView.reloadData()
     }
     override func loadData(page:Int, complete:@escaping ([Any],Int,Int)->())
     {
-        delegate.loadData(forPageController:self, page: currentLoadingPage, complete:complete)
+        delegate.loadData(for:self, page: currentLoadingPage, complete:complete)
     }
     override func updateUI(startRow:Int,newDataCount:Int,newIndexList:[IndexPath]) {
-        let tableView = self.delegate.tableView(forPageController:self)
+        let tableView = self.delegate.tableView(for:self)
         var indexList = newIndexList
         if self.insertAnimation {
             tableView.beginUpdates()
@@ -86,6 +88,9 @@ public class IPaTableViewPageController: IPaPageController {
         }
     }
     @objc open func isLoadingCell(_ indexPath:IndexPath) -> Bool {
+        if let isLoadingCell = delegate.isLoadingCell {
+            return isLoadingCell(self,indexPath)
+        }
         return Bool(indexPath.row == datas.count && currentPage != totalPageNum)
     }
     @objc open func isNoDataCell(_ indexPath:IndexPath) -> Bool {
@@ -111,17 +116,17 @@ public class IPaTableViewPageController: IPaPageController {
     }
     @objc open func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         var cell:UITableViewCell
-        if isNoDataCell(indexPath) {
-            cell = delegate.createNoDataCell!(forPageController: self)
+        if isNoDataCell(indexPath) ,let createNoDataCell = delegate.createNoDataCell{
+            cell = createNoDataCell(self)
         }
         else if isLoadingCell(indexPath) {
-            cell = delegate.createLoadingCell(forPageController:self, indexPath: indexPath)
+            cell = delegate.createLoadingCell(for:self, indexPath: indexPath)
             self.loadNextPage()
-            delegate.configureLoadingCell(forPageController:self, cell: cell, indexPath: indexPath)
+            delegate.configureLoadingCell(for:self, cell: cell, indexPath: indexPath)
         }
         else {
-            cell = delegate.createDataCell(forPageController:self, indexPath: indexPath)
-            delegate.configureCell(forPageController:self, cell: cell, indexPath: indexPath, data: datas[indexPath.row])
+            cell = delegate.createDataCell(for:self, indexPath: indexPath)
+            delegate.configureCell(for:self, cell: cell, indexPath: indexPath, data: datas[indexPath.row])
             
         }
         return cell

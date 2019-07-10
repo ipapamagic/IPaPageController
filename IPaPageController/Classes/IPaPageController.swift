@@ -8,8 +8,18 @@
 import UIKit
 
 public class IPaPageController: NSObject {
-    var totalPageNum = 1
-    var currentPage = 0
+    var _totalPageNum:Int = 1
+    var _currentPage:Int = 0
+    public var totalPageNum:Int {
+        get {
+            return _totalPageNum
+        }
+    }
+    public var currentPage:Int {
+        get {
+            return _currentPage
+        }
+    }
     var currentLoadingPage = -1
     var datas = [Any]()
     
@@ -28,8 +38,8 @@ public class IPaPageController: NSObject {
         return (datas.count <= index) ? nil : datas[index]
     }
     @objc open func reloadAllData() {
-        totalPageNum = 1;
-        currentPage = 0;
+        _totalPageNum = 1;
+        _currentPage = 0;
         currentLoadingPage = -1;
         datas.removeAll(keepingCapacity: true)
     }
@@ -38,11 +48,11 @@ public class IPaPageController: NSObject {
             currentLoadingPage = currentPage + 1;
             self.loadData(page: currentLoadingPage, complete: {
                 newDatas,totalPage,currentPage in
-                self.totalPageNum = totalPage
+                self._totalPageNum = totalPage
                 if currentPage != self.currentLoadingPage {
                     return
                 }
-                self.currentPage = self.currentLoadingPage
+                self._currentPage = self.currentLoadingPage
                 self.currentLoadingPage = -1
                 var indexList = [IndexPath]()
                 let startRow = self.datas.count
