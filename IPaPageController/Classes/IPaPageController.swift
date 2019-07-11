@@ -7,7 +7,7 @@
 
 import UIKit
 
-public class IPaPageController: NSObject {
+open class IPaPageController: NSObject {
     var _totalPageNum:Int = 1
     var _currentPage:Int = 0
     public var totalPageNum:Int {
@@ -34,7 +34,7 @@ public class IPaPageController: NSObject {
     @objc open func removeData(at index:Int) {
         self.datas.remove(at: index)
     }
-    @objc open func getData(at index:Int) -> Any? {
+    @objc open func data(at index:Int) -> Any? {
         return (datas.count <= index) ? nil : datas[index]
     }
     @objc open func reloadAllData() {
@@ -42,6 +42,10 @@ public class IPaPageController: NSObject {
         _currentPage = 0;
         currentLoadingPage = -1;
         datas.removeAll(keepingCapacity: true)
+    }
+    open func indexPaths(for dataIndex:Int)->[IndexPath]
+    {
+        return [IndexPath(row: dataIndex, section: 0)]
     }
     @objc open func loadNextPage() {
         if (currentLoadingPage != currentPage + 1) {
@@ -57,7 +61,7 @@ public class IPaPageController: NSObject {
                 var indexList = [IndexPath]()
                 let startRow = self.datas.count
                 for idx in 0..<newDatas.count {
-                    indexList.append(IndexPath(row: startRow + idx, section: 0))
+                    indexList += self.indexPaths(for: startRow + idx)
                 }
                 self.datas = self.datas + newDatas
                 

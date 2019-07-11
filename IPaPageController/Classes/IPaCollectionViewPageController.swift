@@ -14,7 +14,7 @@ import UIKit
     func loadData(for pageController:IPaCollectionViewPageController,  page:Int, complete:@escaping ([Any],Int,Int)->())
     func configureCell(for pageController:IPaCollectionViewPageController,cell:UICollectionViewCell,indexPath:IndexPath,data:Any)
     func configureLoadingCell(for pageController:IPaCollectionViewPageController,cell:UICollectionViewCell,indexPath:IndexPath)
-    @objc optional func isLoadingCell(for pageController:IPaCollectionViewPageController, indexPath:IndexPath) -> Bool
+    
 }
 
 public class IPaCollectionViewPageController: IPaPageController {
@@ -35,9 +35,6 @@ public class IPaCollectionViewPageController: IPaPageController {
         
     }
     @objc open func isLoadingCell(_ indexPath:IndexPath) -> Bool {
-        if let isLoadingCell = delegate.isLoadingCell {
-            return isLoadingCell(self,indexPath)
-        }
         return Bool(indexPath.item == datas.count && currentPage != totalPageNum)
     }
     @objc open func isNoDataCell(_ indexPath:IndexPath) -> Bool {

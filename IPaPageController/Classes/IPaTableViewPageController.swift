@@ -17,10 +17,9 @@ import UIKit
     func configureCell(for pageController:IPaTableViewPageController,cell:UITableViewCell,indexPath:IndexPath,data:Any)
     func configureLoadingCell(for pageController:IPaTableViewPageController,cell:UITableViewCell,indexPath:IndexPath)
     
-    @objc optional func isLoadingCell(for pageController:IPaTableViewPageController, indexPath:IndexPath) -> Bool
 }
 
-public class IPaTableViewPageController: IPaPageController {
+open class IPaTableViewPageController: IPaPageController {
     var hasLoadingCell = false
     var hasNoDataCell = false
     open var insertAnimation = true
@@ -36,6 +35,12 @@ public class IPaTableViewPageController: IPaPageController {
     {
         delegate.loadData(for:self, page: currentLoadingPage, complete:complete)
     }
+    open func indexPathForLoadingCell(when rowCount:Int) -> IndexPath {
+        return IndexPath(row: rowCount, section: 0)
+    }
+    open func data(for indexPath:IndexPath) -> Any {
+        return datas[indexPath.row]
+    }
     override func updateUI(startRow:Int,newDataCount:Int,newIndexList:[IndexPath]) {
         let tableView = self.delegate.tableView(for:self)
         var indexList = newIndexList
@@ -47,12 +52,12 @@ public class IPaTableViewPageController: IPaPageController {
                     self.hasNoDataCell = false
                 }
                 else if self.hasLoadingCell {
-                    tableView.deleteRows(at: [IndexPath(row: startRow, section: 0)], with: .none)
+                    tableView.deleteRows(at: [self.indexPathForLoadingCell(when: startRow)], with: .none)
                 }
             }
             else if !self.hasLoadingCell {
                 //add back loading cell
-                indexList.append(IndexPath(row: startRow + newDataCount, section: 0))
+                indexList.append(self.indexPathForLoadingCell(when: startRow + newDataCount))
             }
             
             
@@ -88,9 +93,6 @@ public class IPaTableViewPageController: IPaPageController {
         }
     }
     @objc open func isLoadingCell(_ indexPath:IndexPath) -> Bool {
-        if let isLoadingCell = delegate.isLoadingCell {
-            return isLoadingCell(self,indexPath)
-        }
         return Bool(indexPath.row == datas.count && currentPage != totalPageNum)
     }
     @objc open func isNoDataCell(_ indexPath:IndexPath) -> Bool {
@@ -126,7 +128,7 @@ public class IPaTableViewPageController: IPaPageController {
         }
         else {
             cell = delegate.createDataCell(for:self, indexPath: indexPath)
-            delegate.configureCell(for:self, cell: cell, indexPath: indexPath, data: datas[indexPath.row])
+            delegate.configureCell(for:self, cell: cell, indexPath: indexPath, data: data(for: indexPath))
             
         }
         return cell
