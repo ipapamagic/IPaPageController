@@ -20,11 +20,15 @@ import UIKit
 }
 
 open class IPaTableViewPageController: IPaPageController {
-    var hasLoadingCell = false
-    var hasNoDataCell = false
+    
     open var insertAnimation = true
     open var noLoadingCellAtBegining = false
     open var enableNoDataCell = false
+    open var isNoData:Bool {
+        get {
+            return currentPage == totalPageNum && self.dataCount == 0
+        }
+    }
     @objc open var delegate:IPaTableViewPageControllerDelegate!
     @objc open override func reloadAllData() {
         super.reloadAllData()
@@ -35,91 +39,85 @@ open class IPaTableViewPageController: IPaPageController {
     {
         delegate.loadData(for:self, page: currentLoadingPage, complete:complete)
     }
-    open func indexPathForLoadingCell(when rowCount:Int) -> IndexPath {
-        return IndexPath(row: rowCount, section: 0)
-    }
     open func data(for indexPath:IndexPath) -> Any {
         return datas[indexPath.row]
     }
-    override func updateUI(startRow:Int,newDataCount:Int,newIndexList:[IndexPath]) {
+    open func indexPathForLoadingCell() -> IndexPath {
+        return IndexPath(row: 0, section: 1)
+    }
+    open func indexPathForNoDataCell() -> IndexPath {
+        return IndexPath(row: 0, section: 2)
+    }
+    open func sectionNumber(for dataCount:Int)->Int {
+        return 1
+    }
+    override open func updateUI(startRow:Int,newDataCount:Int,newIndexList:[IndexPath]) {
         let tableView = self.delegate.tableView(for:self)
-        var indexList = newIndexList
+        
         if self.insertAnimation {
             tableView.beginUpdates()
+            if newIndexList.count > 0 {
+                tableView.insertRows(at: newIndexList, with: .automatic)
+            }
             if self.currentPage == self.totalPageNum {
-                if self.currentPage == 0 && self.hasNoDataCell {
-                    tableView.deleteRows(at: [IndexPath(row: 0, section: 0)], with: .none)
-                    self.hasNoDataCell = false
+                
+                if self.enableNoDataCell && self.datas.count == 0 && self.currentPage == 1 && self.totalPageNum == 1 {
+                    //create no data cell
+                    tableView.insertRows(at: [indexPathForNoDataCell()], with: .automatic)
+                    
                 }
-                else if self.hasLoadingCell {
-                    tableView.deleteRows(at: [self.indexPathForLoadingCell(when: startRow)], with: .none)
+                else if !(currentPage == 1 && self.noLoadingCellAtBegining) {
+                    
+                    //remove loading cell
+                    tableView.deleteRows(at: [indexPathForLoadingCell()], with: .automatic)
+                    
                 }
-            }
-            else if !self.hasLoadingCell {
-                //add back loading cell
-                indexList.append(self.indexPathForLoadingCell(when: startRow + newDataCount))
-            }
-            
-            
-            if indexList.count > 0 {
-                tableView.insertRows(at: indexList, with: .automatic)
-            }
-            if self.currentPage != self.totalPageNum {
-                tableView.endUpdates() //need to call before reloadRows
                 
             }
             else {
-                if self.enableNoDataCell && self.datas.count == 0 && self.currentPage == 1 && self.totalPageNum == 1 {
-                    tableView.insertRows(at: [IndexPath(row:0,section:0)], with: .automatic)
-                    self.hasNoDataCell = true
-                }
                 
-                tableView.endUpdates() //need to call after insert new rows
+                if currentPage == 1 && self.noLoadingCellAtBegining {
+                    tableView.insertRows(at: [indexPathForLoadingCell()], with: .automatic)
+                }
             }
+            
+            tableView.endUpdates() //need to call after insert new rows
         }
         else {
-            if self.currentPage == self.totalPageNum {
-                if self.currentPage == 0 && self.hasNoDataCell {
-                    
-                    self.hasNoDataCell = false
-                }
-                
-                if self.enableNoDataCell && self.datas.count == 0 && self.currentPage == 1 && self.totalPageNum == 1 {
-                    
-                    self.hasNoDataCell = true
-                }
-            }
+            
             tableView.reloadData()
         }
     }
+    
     @objc open func isLoadingCell(_ indexPath:IndexPath) -> Bool {
-        return Bool(indexPath.row == datas.count && currentPage != totalPageNum)
+        return (indexPathForLoadingCell() == indexPath)
     }
     @objc open func isNoDataCell(_ indexPath:IndexPath) -> Bool {
-        return Bool(indexPath.row == 0 && datas.count == 0 && currentPage == totalPageNum && totalPageNum == 1)
+        return (indexPathForNoDataCell() == indexPath)
     }
     // MARK:Table view data source
     @objc open func numberOfSections(in tableView: UITableView) -> Int {
-        return 1
+        return sectionNumber(for: datas.count) + 2
     }
     @objc open func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        hasLoadingCell = false
-        if currentPage == 0 && noLoadingCellAtBegining {
-            return 0
-        }
-        if currentPage == totalPageNum {
-            if (datas.count == 0 && enableNoDataCell) {
-                return 1
+        
+        if section == indexPathForLoadingCell().section {
+            if noLoadingCellAtBegining && currentPage == 0{
+                return 0
             }
+            return (totalPageNum > currentPage) ? 1 : 0
+        }
+        else if section == indexPathForNoDataCell().section {
+            return (self.enableNoDataCell && self.datas.count == 0 && self.currentPage == 1 && self.totalPageNum == 1) ? 1 : 0
+        }
+        else {
             return datas.count
         }
-        hasLoadingCell = true
-        return datas.count + 1
     }
     @objc open func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         var cell:UITableViewCell
-        if isNoDataCell(indexPath) ,let createNoDataCell = delegate.createNoDataCell{
-            cell = createNoDataCell(self)
+        if isNoDataCell(indexPath) {
+            cell = delegate.createNoDataCell!(for: self)
         }
         else if isLoadingCell(indexPath) {
             cell = delegate.createLoadingCell(for:self, indexPath: indexPath)

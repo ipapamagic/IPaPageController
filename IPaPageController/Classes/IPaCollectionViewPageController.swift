@@ -29,7 +29,7 @@ public class IPaCollectionViewPageController: IPaPageController {
     {
         delegate.loadData(for:self, page: currentLoadingPage, complete:complete)
     }
-    override func updateUI(startRow:Int,newDataCount:Int,newIndexList:[IndexPath]) {
+    override open func updateUI(startRow:Int,newDataCount:Int,newIndexList:[IndexPath]) {
         let collectionView = delegate.collectionView(for: self)
         collectionView.reloadData()
         

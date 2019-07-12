@@ -78,7 +78,7 @@ open class IPaPageController: NSObject {
     {
         
     }
-    func updateUI(startRow:Int,newDataCount:Int,newIndexList:[IndexPath]) {
+    open func updateUI(startRow:Int,newDataCount:Int,newIndexList:[IndexPath]) {
         
     }
     
