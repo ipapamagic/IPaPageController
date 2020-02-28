@@ -47,7 +47,7 @@ open class IPaPageController: NSObject {
     {
         return [IndexPath(row: dataIndex, section: 0)]
     }
-    @objc open func loadNextPage() {
+    @objc open func loadNextPage(_ complete:(()->())? = nil) {
         if (currentLoadingPage != currentPage + 1) {
             currentLoadingPage = currentPage + 1;
             self.loadData(page: currentLoadingPage, complete: {
@@ -69,6 +69,7 @@ open class IPaPageController: NSObject {
                 
                 DispatchQueue.main.async {
                     self.updateUI(startRow: startRow, newDataCount: newDatas.count,newIndexList: indexList)
+                    complete?()
                 }
             })
             

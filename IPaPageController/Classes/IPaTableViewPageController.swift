@@ -17,6 +17,10 @@ import UIKit
     func configureCell(for pageController:IPaTableViewPageController,cell:UITableViewCell,indexPath:IndexPath,data:Any)
     func configureLoadingCell(for pageController:IPaTableViewPageController,cell:UITableViewCell,indexPath:IndexPath)
     
+    //only called when noLoadingCellAtBegining is true
+    func onReloading(for pageController:IPaTableViewPageController)
+    func onReloadingCompleted(for pageController:IPaTableViewPageController)
+    
 }
 
 open class IPaTableViewPageController: IPaPageController {
@@ -34,6 +38,8 @@ open class IPaTableViewPageController: IPaPageController {
         super.reloadAllData()
         let tableView = delegate.tableView(for:self)
         tableView.reloadData()
+        
+        
     }
     override func loadData(page:Int, complete:@escaping ([Any],Int,Int)->())
     {
@@ -108,6 +114,10 @@ open class IPaTableViewPageController: IPaPageController {
         
         if section == indexPathForLoadingCell().section {
             if noLoadingCellAtBegining && currentPage == 0{
+                self.delegate.onReloading(for: self)
+                self.loadNextPage({
+                    self.delegate.onReloadingCompleted(for: self)
+                })
                 return 0
             }
             return (totalPageNum > currentPage) ? 1 : 0
