@@ -18,8 +18,8 @@ import UIKit
     func configureLoadingCell(for pageController:IPaTableViewPageController,cell:UITableViewCell,indexPath:IndexPath)
     
     //only called when noLoadingCellAtBegining is true
-    func onReloading(for pageController:IPaTableViewPageController)
-    func onReloadingCompleted(for pageController:IPaTableViewPageController)
+    @objc optional func onReloading(for pageController:IPaTableViewPageController)
+    @objc optional func onReloadingCompleted(for pageController:IPaTableViewPageController)
     
 }
 
@@ -59,7 +59,9 @@ open class IPaTableViewPageController: IPaPageController {
     }
     override open func updateUI(startRow:Int,newDataCount:Int,newIndexList:[IndexPath]) {
         let tableView = self.delegate.tableView(for:self)
-        
+        tableView.layer.removeAllAnimations()
+        UIView.setAnimationsEnabled(false)
+        let contentOffset = tableView.contentOffset
         if self.insertAnimation {
             tableView.beginUpdates()
             if newIndexList.count > 0 {
@@ -93,6 +95,8 @@ open class IPaTableViewPageController: IPaPageController {
             
             tableView.reloadData()
         }
+        UIView.setAnimationsEnabled(true)
+        tableView .setContentOffset(contentOffset, animated: false)
         let loadingCellIndexPath = indexPathForLoadingCell()
         if let indexPaths = tableView.indexPathsForVisibleRows ,indexPaths.contains(loadingCellIndexPath) {
             loadNextPage() 
@@ -114,9 +118,9 @@ open class IPaTableViewPageController: IPaPageController {
         
         if section == indexPathForLoadingCell().section {
             if noLoadingCellAtBegining && currentPage == 0{
-                self.delegate.onReloading(for: self)
+                self.delegate.onReloading?(for: self)
                 self.loadNextPage({
-                    self.delegate.onReloadingCompleted(for: self)
+                    self.delegate.onReloadingCompleted?(for: self)
                 })
                 return 0
             }
