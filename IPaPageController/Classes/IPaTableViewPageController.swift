@@ -60,7 +60,7 @@ open class IPaTableViewPageController: IPaPageController {
     override open func updateUI(startRow:Int,newDataCount:Int,newIndexList:[IndexPath]) {
         let tableView = self.delegate.tableView(for:self)
         tableView.layer.removeAllAnimations()
-        UIView.setAnimationsEnabled(false)
+//        UIView.setAnimationsEnabled(false)
         let contentOffset = tableView.contentOffset
         if self.insertAnimation {
             tableView.beginUpdates()
@@ -95,7 +95,7 @@ open class IPaTableViewPageController: IPaPageController {
             
             tableView.reloadData()
         }
-        UIView.setAnimationsEnabled(true)
+//        UIView.setAnimationsEnabled(true)
         tableView .setContentOffset(contentOffset, animated: false)
         let loadingCellIndexPath = indexPathForLoadingCell()
         if let indexPaths = tableView.indexPathsForVisibleRows ,indexPaths.contains(loadingCellIndexPath) {
