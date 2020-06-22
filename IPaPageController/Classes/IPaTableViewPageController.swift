@@ -6,6 +6,8 @@
 //
 
 import UIKit
+
+
 @objc public protocol IPaTableViewPageControllerDelegate {
     func tableView(for pageController:IPaTableViewPageController) -> UITableView
     func createLoadingCell(for pageController:IPaTableViewPageController, indexPath:IndexPath) -> UITableViewCell
@@ -22,7 +24,76 @@ import UIKit
     @objc optional func onReloadingCompleted(for pageController:IPaTableViewPageController)
     
 }
-
+@objc public class IPaTableViewPageViewController :UIViewController,UITableViewDelegate,UITableViewDataSource ,IPaTableViewPageControllerDelegate {
+    @IBOutlet open var contentTableView:UITableView!
+    open lazy var pageController:IPaTableViewPageController = {
+        let pageController = IPaTableViewPageController()
+        pageController.delegate = self
+        return pageController
+    }()
+    public override func viewDidLoad() {
+        super.viewDidLoad()
+        self.pageController.noLoadingCellAtBegining = true
+           // Do any additional setup after loading the view.
+        
+        let refreshControl = UIRefreshControl()
+        
+        refreshControl.addTarget(self, action:#selector(self.onNeedRefresh(_:)), for: .valueChanged)
+        self.contentTableView.refreshControl = refreshControl
+        
+        
+        
+    }
+    @objc func onNeedRefresh(_ sender:UIRefreshControl) {
+        self.pageController.reloadAllData()
+        sender.endRefreshing()
+    }
+    
+    public func numberOfSections(in tableView: UITableView) ->
+         Int {
+        return pageController.numberOfSections(in: tableView)
+    }
+    public func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return pageController.tableView(tableView, numberOfRowsInSection: section)
+    }
+    public func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        return pageController.tableView(tableView, cellForRowAt: indexPath)
+    }
+    public func onReloading(for pageController: IPaTableViewPageController) {
+        if let refreshControl = self.contentTableView.refreshControl {
+            refreshControl.beginRefreshing()
+        }
+    }
+    public func onReloadingCompleted(for pageController: IPaTableViewPageController) {
+        if let refreshControl = self.contentTableView.refreshControl {
+             refreshControl.endRefreshing()
+        }
+    }
+    public func tableView(for pageController: IPaTableViewPageController) -> UITableView {
+        return contentTableView
+    }
+ 
+    public func createLoadingCell(for pageController: IPaTableViewPageController, indexPath: IndexPath) -> UITableViewCell {
+        fatalError("need override in sub class")
+    }
+     
+    public func configureLoadingCell(for pageController: IPaTableViewPageController, cell: UITableViewCell, indexPath: IndexPath) {
+        fatalError("need override in sub class")
+    }
+    public func createDataCell(for pageController: IPaTableViewPageController, indexPath: IndexPath) -> UITableViewCell {
+        fatalError("need override in sub class")
+    }
+    
+    public func configureCell(for pageController: IPaTableViewPageController, cell: UITableViewCell, indexPath: IndexPath, data: Any) {
+        fatalError("need override in sub class")
+    }
+    
+    public func loadData(for pageController: IPaTableViewPageController, page: Int, complete: @escaping ([Any], Int, Int) -> ()) {
+        fatalError("need override in sub class")
+    }
+    
+    
+}
 open class IPaTableViewPageController: IPaPageController {
     
     open var insertAnimation = true

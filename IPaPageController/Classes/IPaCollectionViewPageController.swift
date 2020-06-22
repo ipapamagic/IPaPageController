@@ -6,7 +6,8 @@
 //
 
 import UIKit
-@objc public protocol IPaCollectionViewPageControllerDelegate {
+
+public protocol IPaCollectionViewPageControllerDelegate {
     func collectionView(for pageController:IPaCollectionViewPageController) -> UICollectionView
     func createLoadingCell(for pageController:IPaCollectionViewPageController, indexPath:IndexPath) -> UICollectionViewCell
     func createDataCell(for pageController:IPaCollectionViewPageController, indexPath:IndexPath) -> UICollectionViewCell
@@ -17,9 +18,52 @@ import UIKit
     
 }
 
+@objc open class IPaCollectionViewPageViewController :UIViewController,UICollectionViewDelegateFlowLayout,UICollectionViewDataSource ,IPaCollectionViewPageControllerDelegate {
+    
+    @IBOutlet open var contentCollectionView: UICollectionView!
+    open lazy var pageController:IPaCollectionViewPageController = {
+        let pageController = IPaCollectionViewPageController()
+        pageController.delegate = self
+        return pageController
+    }()
+    
+    public func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        return self.pageController.collectionView(collectionView, cellForItemAt: indexPath)
+    }
+    public func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        return self.pageController.collectionView(collectionView, numberOfItemsInSection: section)
+    }
+    public func numberOfSections(in collectionView: UICollectionView) -> Int {
+        return self.pageController.numberOfSections(in: collectionView)
+    }
+    public func collectionView(for pageController: IPaCollectionViewPageController) -> UICollectionView {
+        return self.contentCollectionView
+    }
+    
+    public func createDataCell(for pageController: IPaCollectionViewPageController, indexPath: IndexPath) -> UICollectionViewCell {
+        fatalError("need override in sub class")
+    }
+
+    public func createLoadingCell(for pageController: IPaCollectionViewPageController, indexPath: IndexPath) -> UICollectionViewCell {
+        fatalError("need override in sub class")
+    }
+    public func loadData(for pageController: IPaCollectionViewPageController, page: Int, complete: @escaping ([Any], Int, Int) -> ()) {
+        fatalError("need override in sub class")
+    }
+    
+    public func configureCell(for pageController: IPaCollectionViewPageController, cell: UICollectionViewCell, indexPath: IndexPath, data: Any) {
+        fatalError("need override in sub class")
+    }
+    
+    public func configureLoadingCell(for pageController: IPaCollectionViewPageController, cell: UICollectionViewCell, indexPath: IndexPath) {
+        fatalError("need override in sub class")
+    }
+}
+
+
 public class IPaCollectionViewPageController: IPaPageController {
     var hasLoadingCell = false
-    @objc open var delegate:IPaCollectionViewPageControllerDelegate!
+    open var delegate:IPaCollectionViewPageControllerDelegate!
     @objc open override func reloadAllData() {
         super.reloadAllData()
         let collectionView = delegate.collectionView(for: self)
