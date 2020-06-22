@@ -49,46 +49,46 @@ import UIKit
         sender.endRefreshing()
     }
     
-    public func numberOfSections(in tableView: UITableView) ->
+    open func numberOfSections(in tableView: UITableView) ->
          Int {
         return pageController.numberOfSections(in: tableView)
     }
-    public func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    open func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return pageController.tableView(tableView, numberOfRowsInSection: section)
     }
-    public func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+    open func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         return pageController.tableView(tableView, cellForRowAt: indexPath)
     }
-    public func onReloading(for pageController: IPaTableViewPageController) {
+    open func onReloading(for pageController: IPaTableViewPageController) {
         if let refreshControl = self.contentTableView.refreshControl {
             refreshControl.beginRefreshing()
         }
     }
-    public func onReloadingCompleted(for pageController: IPaTableViewPageController) {
+    open func onReloadingCompleted(for pageController: IPaTableViewPageController) {
         if let refreshControl = self.contentTableView.refreshControl {
              refreshControl.endRefreshing()
         }
     }
-    public func tableView(for pageController: IPaTableViewPageController) -> UITableView {
+    open func tableView(for pageController: IPaTableViewPageController) -> UITableView {
         return contentTableView
     }
  
-    public func createLoadingCell(for pageController: IPaTableViewPageController, indexPath: IndexPath) -> UITableViewCell {
+    open func createLoadingCell(for pageController: IPaTableViewPageController, indexPath: IndexPath) -> UITableViewCell {
         fatalError("need override in sub class")
     }
      
-    public func configureLoadingCell(for pageController: IPaTableViewPageController, cell: UITableViewCell, indexPath: IndexPath) {
+    open func configureLoadingCell(for pageController: IPaTableViewPageController, cell: UITableViewCell, indexPath: IndexPath) {
         fatalError("need override in sub class")
     }
-    public func createDataCell(for pageController: IPaTableViewPageController, indexPath: IndexPath) -> UITableViewCell {
-        fatalError("need override in sub class")
-    }
-    
-    public func configureCell(for pageController: IPaTableViewPageController, cell: UITableViewCell, indexPath: IndexPath, data: Any) {
+    open func createDataCell(for pageController: IPaTableViewPageController, indexPath: IndexPath) -> UITableViewCell {
         fatalError("need override in sub class")
     }
     
-    public func loadData(for pageController: IPaTableViewPageController, page: Int, complete: @escaping ([Any], Int, Int) -> ()) {
+    open func configureCell(for pageController: IPaTableViewPageController, cell: UITableViewCell, indexPath: IndexPath, data: Any) {
+        fatalError("need override in sub class")
+    }
+    
+    open func loadData(for pageController: IPaTableViewPageController, page: Int, complete: @escaping ([Any], Int, Int) -> ()) {
         fatalError("need override in sub class")
     }
     
