@@ -161,13 +161,17 @@ open class IPaTableViewPageController: IPaPageController {
             }
             
             tableView.endUpdates() //need to call after insert new rows
+            
         }
         else {
             
             tableView.reloadData()
         }
 //        UIView.setAnimationsEnabled(true)
-        tableView .setContentOffset(contentOffset, animated: false)
+        if currentPage > 1 {
+            tableView .setContentOffset(contentOffset, animated: false)
+        }
+        
         let loadingCellIndexPath = indexPathForLoadingCell()
         if let indexPaths = tableView.indexPathsForVisibleRows ,indexPaths.contains(loadingCellIndexPath) {
             loadNextPage() 
