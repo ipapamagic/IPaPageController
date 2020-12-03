@@ -12,7 +12,7 @@ public protocol IPaCollectionViewPageControllerDelegate {
     func createLoadingCell(for pageController:IPaCollectionViewPageController, indexPath:IndexPath) -> UICollectionViewCell
     func createDataCell(for pageController:IPaCollectionViewPageController, indexPath:IndexPath) -> UICollectionViewCell
 
-    func loadData(for pageController:IPaCollectionViewPageController,  page:Int, complete:@escaping ([Any],Int,Int)->())
+    func loadData(for pageController:IPaCollectionViewPageController,  page:Int, complete:@escaping (IPaPageController.PageInfo)->())
     func configureCell(for pageController:IPaCollectionViewPageController,cell:UICollectionViewCell,indexPath:IndexPath,data:Any)
     func configureLoadingCell(for pageController:IPaCollectionViewPageController,cell:UICollectionViewCell,indexPath:IndexPath)
     
@@ -47,7 +47,7 @@ public protocol IPaCollectionViewPageControllerDelegate {
     open func createLoadingCell(for pageController: IPaCollectionViewPageController, indexPath: IndexPath) -> UICollectionViewCell {
         fatalError("need override in sub class")
     }
-    open func loadData(for pageController: IPaCollectionViewPageController, page: Int, complete: @escaping ([Any], Int, Int) -> ()) {
+    open func loadData(for pageController: IPaCollectionViewPageController, page: Int, complete: @escaping (IPaPageController.PageInfo) -> ()) {
         fatalError("need override in sub class")
     }
     
@@ -69,11 +69,11 @@ public class IPaCollectionViewPageController: IPaPageController {
         let collectionView = delegate.collectionView(for: self)
         collectionView.reloadData()
     }
-    override func loadData(page:Int, complete:@escaping ([Any],Int,Int)->())
+    override func loadData(page:Int, complete:@escaping (PageInfo)->())
     {
         delegate.loadData(for:self, page: currentLoadingPage, complete:complete)
     }
-    override open func updateUI(startRow:Int,newDataCount:Int,newIndexList:[IndexPath]) {
+    override open func updateUI(_ newIndexList:[IndexPath]) {
         let collectionView = delegate.collectionView(for: self)
         collectionView.reloadData()
         

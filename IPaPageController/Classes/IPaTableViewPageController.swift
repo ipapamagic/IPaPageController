@@ -8,29 +8,41 @@
 import UIKit
 
 
-@objc public protocol IPaTableViewPageControllerDelegate {
+public protocol IPaTableViewPageControllerDelegate {
     func tableView(for pageController:IPaTableViewPageController) -> UITableView
     func createLoadingCell(for pageController:IPaTableViewPageController, indexPath:IndexPath) -> UITableViewCell
     func createDataCell(for pageController:IPaTableViewPageController, indexPath:IndexPath) -> UITableViewCell
     
-    @objc optional func createNoDataCell(for pageController:IPaTableViewPageController,indexPath:IndexPath) -> UITableViewCell
-    
-    func loadData(for pageController:IPaTableViewPageController,  page:Int, complete:@escaping ([Any],Int,Int)->())
+    func createNoDataCell(for pageController:IPaTableViewPageController,indexPath:IndexPath) -> UITableViewCell
+    //complete(datas, total page, current page
+    func loadData(for pageController:IPaTableViewPageController,  page:Int, complete:@escaping (IPaPageController.PageInfo)->())
     func configureCell(for pageController:IPaTableViewPageController,cell:UITableViewCell,indexPath:IndexPath,data:Any)
     func configureLoadingCell(for pageController:IPaTableViewPageController,cell:UITableViewCell,indexPath:IndexPath)
     
     //only called when noLoadingCellAtBegining is true
-    @objc optional func onReloading(for pageController:IPaTableViewPageController)
-    @objc optional func onReloadingCompleted(for pageController:IPaTableViewPageController)
     
+    //optional (default implementation)
+    func onReloading(for pageController:IPaTableViewPageController)
+    func onReloadingCompleted(for pageController:IPaTableViewPageController)
+    
+}
+extension IPaTableViewPageControllerDelegate //default implement
+{
+    
+    public func createNoDataCell(for pageController:IPaTableViewPageController,indexPath:IndexPath) -> UITableViewCell {
+        return UITableViewCell()
+    }
+    public func onReloading(for pageController:IPaTableViewPageController)
+    {
+        
+    }
+    public func onReloadingCompleted(for pageController:IPaTableViewPageController) {
+        
+    }
 }
 @objc public class IPaTableViewPageViewController :UIViewController,UITableViewDelegate,UITableViewDataSource ,IPaTableViewPageControllerDelegate {
     @IBOutlet open var contentTableView:UITableView!
-    open lazy var pageController:IPaTableViewPageController = {
-        let pageController = IPaTableViewPageController()
-        pageController.delegate = self
-        return pageController
-    }()
+    open lazy var pageController:IPaTableViewPageController = IPaTableViewPageController(self)
     public override func viewDidLoad() {
         super.viewDidLoad()
         self.pageController.noLoadingCellAtBegining = true
@@ -88,7 +100,7 @@ import UIKit
         fatalError("need override in sub class")
     }
     
-    open func loadData(for pageController: IPaTableViewPageController, page: Int, complete: @escaping ([Any], Int, Int) -> ()) {
+    open func loadData(for pageController: IPaTableViewPageController, page: Int, complete: @escaping (IPaPageController.PageInfo) -> ()) {
         fatalError("need override in sub class")
     }
     
@@ -99,12 +111,26 @@ open class IPaTableViewPageController: IPaPageController {
     open var insertAnimation = true
     open var noLoadingCellAtBegining = false
     open var enableNoDataCell = false
+    
+    //section for display cell that indicate no data
+    open var noDataSection:Int {
+        return loadingSection + 1
+    }
+    //section for display loading cell
+    open var loadingSection:Int {
+        return pageDataSection + 1
+    }
     open var isNoData:Bool {
         get {
             return currentPage == totalPageNum && self.dataCount == 0
         }
     }
-    @objc open var delegate:IPaTableViewPageControllerDelegate!
+    open var delegate:IPaTableViewPageControllerDelegate!
+    
+    public convenience init(_ delegate:IPaTableViewPageControllerDelegate) {
+        self.init()
+        self.delegate = delegate
+    }
     @objc open override func reloadAllData() {
         super.reloadAllData()
         let tableView = delegate.tableView(for:self)
@@ -112,23 +138,24 @@ open class IPaTableViewPageController: IPaPageController {
         
         
     }
-    override func loadData(page:Int, complete:@escaping ([Any],Int,Int)->())
+    override func loadData(page:Int, complete:@escaping (PageInfo)->())
     {
         delegate.loadData(for:self, page: currentLoadingPage, complete:complete)
     }
-    open func data(for indexPath:IndexPath) -> Any {
+    open func data(for indexPath:IndexPath) -> Any? {
+        guard indexPath.section == self.pageDataSection else {
+            return nil
+        }
         return datas[indexPath.row]
     }
-    open func indexPathForLoadingCell() -> IndexPath {
-        return IndexPath(row: 0, section: 1)
+    func indexPathForLoadingCell() -> IndexPath {
+        return IndexPath(row: 0, section: loadingSection)
     }
-    open func indexPathForNoDataCell() -> IndexPath {
-        return IndexPath(row: 0, section: 2)
+    func indexPathForNoDataCell() -> IndexPath {
+        return IndexPath(row: 0, section: noDataSection)
     }
-    open func sectionNumber(for dataCount:Int)->Int {
-        return 1
-    }
-    override open func updateUI(startRow:Int,newDataCount:Int,newIndexList:[IndexPath]) {
+    
+    override open func updateUI(_ newIndexList:[IndexPath]) {
         let tableView = self.delegate.tableView(for:self)
         tableView.layer.removeAllAnimations()
 //        UIView.setAnimationsEnabled(false)
@@ -187,15 +214,15 @@ open class IPaTableViewPageController: IPaPageController {
     }
     // MARK:Table view data source
     @objc open func numberOfSections(in tableView: UITableView) -> Int {
-        return sectionNumber(for: datas.count) + 2
+        return self.pageDataSection + 3
     }
     @objc open func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         
         if section == indexPathForLoadingCell().section {
             if noLoadingCellAtBegining && currentPage == 0{
-                self.delegate.onReloading?(for: self)
+                self.delegate.onReloading(for: self)
                 self.loadNextPage({
-                    self.delegate.onReloadingCompleted?(for: self)
+                    self.delegate.onReloadingCompleted(for: self)
                 })
                 return 0
             }
@@ -211,7 +238,7 @@ open class IPaTableViewPageController: IPaPageController {
     @objc open func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         var cell:UITableViewCell
         if isNoDataCell(indexPath) {
-            cell = delegate.createNoDataCell!(for: self, indexPath: indexPath)
+            cell = delegate.createNoDataCell(for: self, indexPath: indexPath)
         }
         else if isLoadingCell(indexPath) {
             cell = delegate.createLoadingCell(for:self, indexPath: indexPath)
