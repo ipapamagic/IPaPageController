@@ -247,7 +247,7 @@ open class IPaTableViewPageController: IPaPageController {
         }
         else {
             cell = delegate.createDataCell(for:self, indexPath: indexPath)
-            delegate.configureCell(for:self, cell: cell, indexPath: indexPath, data: data(for: indexPath))
+            delegate.configureCell(for:self, cell: cell, indexPath: indexPath, data: data(for: indexPath) as Any)
             
         }
         return cell
