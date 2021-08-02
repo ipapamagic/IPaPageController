@@ -8,39 +8,26 @@
 import UIKit
 
 
-public protocol IPaTableViewPageControllerDelegate {
+@objc public protocol IPaTableViewPageControllerDelegate {
     func tableView(for pageController:IPaTableViewPageController) -> UITableView
     func createLoadingCell(for pageController:IPaTableViewPageController, indexPath:IndexPath) -> UITableViewCell
     func createDataCell(for pageController:IPaTableViewPageController, indexPath:IndexPath) -> UITableViewCell
     
-    func createNoDataCell(for pageController:IPaTableViewPageController,indexPath:IndexPath) -> UITableViewCell
+    
     //complete(datas, total page, current page
     func loadData(for pageController:IPaTableViewPageController,  page:Int, complete:@escaping (IPaPageController.PageInfo)->())
     func configureCell(for pageController:IPaTableViewPageController,cell:UITableViewCell,indexPath:IndexPath,data:Any)
     func configureLoadingCell(for pageController:IPaTableViewPageController,cell:UITableViewCell,indexPath:IndexPath)
     
     //only called when noLoadingCellAtBegining is true
+    @objc optional func createNoDataCell(for pageController:IPaTableViewPageController,indexPath:IndexPath) -> UITableViewCell
+    @objc optional func onReloading(for pageController:IPaTableViewPageController)
+    @objc optional func onReloadingCompleted(for pageController:IPaTableViewPageController)
     
-    //optional (default implementation)
-    func onReloading(for pageController:IPaTableViewPageController)
-    func onReloadingCompleted(for pageController:IPaTableViewPageController)
-    
-}
-extension IPaTableViewPageControllerDelegate //default implement
-{
-    
-    public func createNoDataCell(for pageController:IPaTableViewPageController,indexPath:IndexPath) -> UITableViewCell {
-        return UITableViewCell()
-    }
-    public func onReloading(for pageController:IPaTableViewPageController)
-    {
-        
-    }
-    public func onReloadingCompleted(for pageController:IPaTableViewPageController) {
-        
-    }
 }
 @objc public class IPaTableViewPageViewController :UIViewController,UITableViewDelegate,UITableViewDataSource ,IPaTableViewPageControllerDelegate {
+   
+    
     @IBOutlet open var contentTableView:UITableView!
     open lazy var pageController:IPaTableViewPageController = IPaTableViewPageController(self)
     public override func viewDidLoad() {
@@ -106,7 +93,7 @@ extension IPaTableViewPageControllerDelegate //default implement
     
     
 }
-open class IPaTableViewPageController: IPaPageController {
+open class IPaTableViewPageController: IPaPageController,UITableViewDelegate,UITableViewDataSource {
     
     open var insertAnimation = true
     open var noLoadingCellAtBegining = false
@@ -125,7 +112,7 @@ open class IPaTableViewPageController: IPaPageController {
             return currentPage == totalPageNum && self.dataCount == 0
         }
     }
-    open var delegate:IPaTableViewPageControllerDelegate!
+    @IBOutlet open var delegate:IPaTableViewPageControllerDelegate!
     
     public convenience init(_ delegate:IPaTableViewPageControllerDelegate) {
         self.init()
@@ -220,9 +207,9 @@ open class IPaTableViewPageController: IPaPageController {
         
         if section == indexPathForLoadingCell().section {
             if noLoadingCellAtBegining && currentPage == 0{
-                self.delegate.onReloading(for: self)
+                self.delegate.onReloading?(for: self)
                 self.loadNextPage({
-                    self.delegate.onReloadingCompleted(for: self)
+                    self.delegate.onReloadingCompleted?(for: self)
                 })
                 return 0
             }
@@ -238,7 +225,7 @@ open class IPaTableViewPageController: IPaPageController {
     @objc open func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         var cell:UITableViewCell
         if isNoDataCell(indexPath) {
-            cell = delegate.createNoDataCell(for: self, indexPath: indexPath)
+            cell = delegate.createNoDataCell!(for: self, indexPath: indexPath)
         }
         else if isLoadingCell(indexPath) {
             cell = delegate.createLoadingCell(for:self, indexPath: indexPath)

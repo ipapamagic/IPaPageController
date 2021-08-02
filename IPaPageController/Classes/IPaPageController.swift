@@ -8,7 +8,7 @@
 import UIKit
 
 open class IPaPageController: NSObject {
-    public struct PageInfo {
+    @objc public class PageInfo:NSObject {
         public var currentPage:Int = 0
         public  var totalPage:Int = 1
         public var newData:[Any] = [Any]()

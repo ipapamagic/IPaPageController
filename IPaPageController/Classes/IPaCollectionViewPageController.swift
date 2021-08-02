@@ -7,7 +7,7 @@
 
 import UIKit
 
-public protocol IPaCollectionViewPageControllerDelegate {
+@objc public protocol IPaCollectionViewPageControllerDelegate {
     func collectionView(for pageController:IPaCollectionViewPageController) -> UICollectionView
     func createLoadingCell(for pageController:IPaCollectionViewPageController, indexPath:IndexPath) -> UICollectionViewCell
     func createDataCell(for pageController:IPaCollectionViewPageController, indexPath:IndexPath) -> UICollectionViewCell
@@ -63,7 +63,7 @@ public protocol IPaCollectionViewPageControllerDelegate {
 
 public class IPaCollectionViewPageController: IPaPageController {
     var hasLoadingCell = false
-    open var delegate:IPaCollectionViewPageControllerDelegate!
+    @IBOutlet open var delegate:IPaCollectionViewPageControllerDelegate!
     @objc open override func reloadAllData() {
         super.reloadAllData()
         let collectionView = delegate.collectionView(for: self)
@@ -86,7 +86,7 @@ public class IPaCollectionViewPageController: IPaPageController {
     }
 }
 
-extension IPaCollectionViewPageController: UICollectionViewDataSource {
+extension IPaCollectionViewPageController: UICollectionViewDelegateFlowLayout,UICollectionViewDataSource {
     //MARK: UICollectionViewDataSource
     public func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int
     {
