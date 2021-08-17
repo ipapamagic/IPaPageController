@@ -23,6 +23,8 @@ import UIKit
     @objc optional func createNoDataCell(for pageController:IPaTableViewPageController,indexPath:IndexPath) -> UITableViewCell
     @objc optional func onReloading(for pageController:IPaTableViewPageController)
     @objc optional func onReloadingCompleted(for pageController:IPaTableViewPageController)
+    @objc optional func extraDataRowCount(for pageController:IPaTableViewPageController, section:Int) -> Int
+    @objc optional func extraDataCell(for pageController:IPaTableViewPageController, indexPath:IndexPath) -> UITableViewCell
     
 }
 @objc public class IPaTableViewPageViewController :UIViewController,UITableViewDelegate,UITableViewDataSource ,IPaTableViewPageControllerDelegate {
@@ -43,6 +45,7 @@ import UIKit
         
         
     }
+    
     @objc func onNeedRefresh(_ sender:UIRefreshControl) {
         self.pageController.reloadAllData()
         sender.endRefreshing()
@@ -98,19 +101,29 @@ open class IPaTableViewPageController: IPaPageController,UITableViewDelegate,UIT
     open var insertAnimation = true
     open var noLoadingCellAtBegining = false
     open var enableNoDataCell = false
-    
+    open var dataSectionCount = 1
     //section for display cell that indicate no data
     open var noDataSection:Int {
-        return loadingSection + 1
+        get {
+            return loadingSection + 1
+        }
     }
     //section for display loading cell
     open var loadingSection:Int {
-        return pageDataSection + 1
+        get {
+            return dataSectionCount
+        }
     }
     open var isNoData:Bool {
         get {
             return currentPage == totalPageNum && self.dataCount == 0
         }
+    }
+    var indexPathForLoadingCell: IndexPath {
+        return IndexPath(row: 0, section: loadingSection)
+    }
+    var indexPathForNoDataCell: IndexPath {
+        return IndexPath(row: 0, section: noDataSection)
     }
     @IBOutlet open var delegate:IPaTableViewPageControllerDelegate!
     
@@ -135,12 +148,7 @@ open class IPaTableViewPageController: IPaPageController,UITableViewDelegate,UIT
         }
         return datas[indexPath.row]
     }
-    func indexPathForLoadingCell() -> IndexPath {
-        return IndexPath(row: 0, section: loadingSection)
-    }
-    func indexPathForNoDataCell() -> IndexPath {
-        return IndexPath(row: 0, section: noDataSection)
-    }
+    
     
     override open func updateUI(_ newIndexList:[IndexPath]) {
         let tableView = self.delegate.tableView(for:self)
@@ -156,13 +164,13 @@ open class IPaTableViewPageController: IPaPageController,UITableViewDelegate,UIT
                 
                 if self.enableNoDataCell && self.datas.count == 0 && self.currentPage == 1 && self.totalPageNum == 1 {
                     //create no data cell
-                    tableView.insertRows(at: [indexPathForNoDataCell()], with: .automatic)
+                    tableView.insertRows(at: [indexPathForNoDataCell], with: .automatic)
                     
                 }
                 if !(currentPage == 1 && self.noLoadingCellAtBegining) {
                     
                     //remove loading cell
-                    tableView.deleteRows(at: [indexPathForLoadingCell()], with: .automatic)
+                    tableView.deleteRows(at: [indexPathForLoadingCell], with: .automatic)
                     
                 }
                 
@@ -170,7 +178,7 @@ open class IPaTableViewPageController: IPaPageController,UITableViewDelegate,UIT
             else {
                 
                 if currentPage == 1 && self.noLoadingCellAtBegining {
-                    tableView.insertRows(at: [indexPathForLoadingCell()], with: .automatic)
+                    tableView.insertRows(at: [indexPathForLoadingCell], with: .automatic)
                 }
             }
             
@@ -186,7 +194,7 @@ open class IPaTableViewPageController: IPaPageController,UITableViewDelegate,UIT
             tableView .setContentOffset(contentOffset, animated: false)
         }
         
-        let loadingCellIndexPath = indexPathForLoadingCell()
+        let loadingCellIndexPath = indexPathForLoadingCell
         if let indexPaths = tableView.indexPathsForVisibleRows ,indexPaths.contains(loadingCellIndexPath) {
             loadNextPage() 
         }
@@ -194,18 +202,19 @@ open class IPaTableViewPageController: IPaPageController,UITableViewDelegate,UIT
     }
     
     @objc open func isLoadingCell(_ indexPath:IndexPath) -> Bool {
-        return (indexPathForLoadingCell() == indexPath)
+        return (indexPathForLoadingCell == indexPath)
     }
     @objc open func isNoDataCell(_ indexPath:IndexPath) -> Bool {
-        return (indexPathForNoDataCell() == indexPath)
+        return (indexPathForNoDataCell == indexPath)
     }
     // MARK:Table view data source
     @objc open func numberOfSections(in tableView: UITableView) -> Int {
-        return self.pageDataSection + 3
+        return self.dataSectionCount + 2
     }
     @objc open func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         
-        if section == indexPathForLoadingCell().section {
+        switch section {
+        case indexPathForLoadingCell.section:
             if noLoadingCellAtBegining && currentPage == 0{
                 self.delegate.onReloading?(for: self)
                 self.loadNextPage({
@@ -214,29 +223,34 @@ open class IPaTableViewPageController: IPaPageController,UITableViewDelegate,UIT
                 return 0
             }
             return (totalPageNum > currentPage) ? 1 : 0
-        }
-        else if section == indexPathForNoDataCell().section {
+        case indexPathForNoDataCell.section:
             return (self.enableNoDataCell && self.datas.count == 0 && self.currentPage == 1 && self.totalPageNum == 1) ? 1 : 0
-        }
-        else {
+        case pageDataSection:
             return datas.count
+        default:
+            return self.delegate.extraDataRowCount?(for: self,section:section) ?? 0
         }
+        
     }
     @objc open func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         var cell:UITableViewCell
-        if isNoDataCell(indexPath) {
-            cell = delegate.createNoDataCell!(for: self, indexPath: indexPath)
-        }
-        else if isLoadingCell(indexPath) {
+        let section = indexPath.section
+        switch section {
+        case indexPathForLoadingCell.section:
             cell = delegate.createLoadingCell(for:self, indexPath: indexPath)
             self.loadNextPage()
             delegate.configureLoadingCell(for:self, cell: cell, indexPath: indexPath)
-        }
-        else {
+        case indexPathForNoDataCell.section:
+            cell = delegate.createNoDataCell!(for: self, indexPath: indexPath)
+        case pageDataSection:
             cell = delegate.createDataCell(for:self, indexPath: indexPath)
             delegate.configureCell(for:self, cell: cell, indexPath: indexPath, data: data(for: indexPath) as Any)
             
+        default:
+            cell =  self.delegate.extraDataCell!(for: self, indexPath: indexPath)
         }
+        
+        
         return cell
     }
     

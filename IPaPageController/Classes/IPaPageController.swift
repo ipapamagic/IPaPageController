@@ -10,7 +10,7 @@ import UIKit
 open class IPaPageController: NSObject {
     @objc public class PageInfo:NSObject {
         public var currentPage:Int = 0
-        public  var totalPage:Int = 1
+        public var totalPage:Int = 1
         public var newData:[Any] = [Any]()
         public var extraIndexPaths:[IndexPath]? = nil
         public init(currentPage:Int,totalPage:Int,newData:[Any],extraIndexPaths:[IndexPath]? = nil) {
