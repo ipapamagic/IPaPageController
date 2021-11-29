@@ -110,7 +110,7 @@ extension IPaCollectionViewPageController: UICollectionViewDelegateFlowLayout,UI
         }
         else {
             cell = delegate.createDataCell(for:self, indexPath: indexPath)
-            delegate.configureCell(for:self, cell: cell, indexPath: indexPath, data: datas[indexPath.row])
+            delegate.configureCell(for:self, cell: cell, indexPath: indexPath, data: datas[indexPath.item])
         }
         return cell
     }
