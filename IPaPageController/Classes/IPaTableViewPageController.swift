@@ -101,7 +101,11 @@ open class IPaTableViewPageController: IPaPageController,UITableViewDelegate,UIT
     open var insertAnimation = true
     open var noLoadingCellAtBegining = false
     open var enableNoDataCell = false
-    open var dataSectionCount = 1
+    open var dataSectionCount:Int {
+        get {
+            return 1
+        }
+    }
     //section for display cell that indicate no data
     open var noDataSection:Int {
         get {
