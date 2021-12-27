@@ -23,7 +23,11 @@ open class IPaPageController: NSObject {
     var _totalPageNum:Int = 1
     var _currentPage:Int = 0
     //section for page data located on
-    open var pageDataSection:Int = 0
+    open var pageDataSection:Int {
+        get {
+            return 0
+        }
+    }
     public var totalPageNum:Int {
         get {
             return _totalPageNum

@@ -129,6 +129,9 @@ open class IPaTableViewPageController: IPaPageController,UITableViewDelegate,UIT
     var indexPathForNoDataCell: IndexPath {
         return IndexPath(row: 0, section: noDataSection)
     }
+    var showNoDataSection:Bool {
+        return self.enableNoDataCell && self.datas.count == 0 && self.currentPage == 1 && self.totalPageNum == 1
+    }
     @IBOutlet open var delegate:IPaTableViewPageControllerDelegate!
     
     public convenience init(_ delegate:IPaTableViewPageControllerDelegate) {
@@ -166,7 +169,7 @@ open class IPaTableViewPageController: IPaPageController,UITableViewDelegate,UIT
             }
             if self.currentPage == self.totalPageNum {
                 
-                if self.enableNoDataCell && self.datas.count == 0 && self.currentPage == 1 && self.totalPageNum == 1 {
+                if showNoDataSection {
                     //create no data cell
                     tableView.insertRows(at: [indexPathForNoDataCell], with: .automatic)
                     
@@ -228,7 +231,7 @@ open class IPaTableViewPageController: IPaPageController,UITableViewDelegate,UIT
             }
             return (totalPageNum > currentPage) ? 1 : 0
         case indexPathForNoDataCell.section:
-            return (self.enableNoDataCell && self.datas.count == 0 && self.currentPage == 1 && self.totalPageNum == 1) ? 1 : 0
+            return self.showNoDataSection ? 1 : 0
         case pageDataSection:
             return datas.count
         default:
