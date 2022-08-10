@@ -8,7 +8,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'IPaPageController'
-  s.version          = '2.0'
+  s.version          = '2.1.0'
   s.summary          = 'A short description of IPaPageController.'
   s.swift_version    = '5.0'
 # This description is used to generate tags and improve search results.
